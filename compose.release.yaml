@@ -5,7 +5,7 @@
 #   mv compose.release.yaml compose.yaml && cp .env.example .env
 #   docker compose up -d
 #
-# 首次初始化（创建管理员 + 生成 Token）见 README「快速开始」。
+# 首次初始化（创建管理员 + 生成 Token）见 README「首次初始化」。
 services:
   javinizer:
     image: ghcr.io/javinizer/javinizer-go:latest
