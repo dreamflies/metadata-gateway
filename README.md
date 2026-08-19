@@ -2,9 +2,6 @@
 
 供桌面端影视库使用的统一元数据网关。使用预构建镜像部署，**不需要下载源码，也不需要安装 Go 或任何编译工具**。
 
-- `jav`（日本影片）通过 Javinizer 按番号刮削
-- `western`（欧美影片）通过 StashDB 检索
-
 镜像：`ghcr.io/dreamflies/metadata-gateway`，提供 `linux/amd64` 和 `linux/arm64`，Intel/AMD 机器与 Apple Silicon、树莓派都能直接运行。
 
 ---
