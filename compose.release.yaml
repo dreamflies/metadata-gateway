@@ -1,0 +1,50 @@
+# 普通用户使用：直接拉取已发布镜像，无需 Go 工具链、无需克隆源码。
+#
+#   curl -O https://raw.githubusercontent.com/dreamflies/metadata-gateway/main/compose.release.yaml
+#   curl -O https://raw.githubusercontent.com/dreamflies/metadata-gateway/main/.env.example
+#   mv compose.release.yaml compose.yaml && cp .env.example .env
+#   docker compose up -d
+#
+# 首次初始化（创建管理员 + 生成 Token）见 README「快速开始」。
+services:
+  javinizer:
+    image: ghcr.io/javinizer/javinizer-go:latest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${JAVINIZER_HOST_PORT:-8765}:8765"
+    volumes:
+      - ./javinizer-data:/javinizer
+    environment:
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
+      TZ: ${TZ:-Asia/Shanghai}
+      JAVINIZER_HOME: /javinizer
+      JAVINIZER_CONFIG: /javinizer/config.yaml
+      JAVINIZER_DB: /javinizer/javinizer.db
+      JAVINIZER_LOG_DIR: /javinizer/logs
+      JAVINIZER_TEMP_DIR: /javinizer/temp
+      JAVINIZER_SETUP_TRUSTED_CIDRS: ${JAVINIZER_SETUP_TRUSTED_CIDRS:-172.16.0.0/12}
+    healthcheck:
+      test: ["CMD", "wget", "--method=GET", "-O", "/dev/null", "-q", "http://localhost:8765/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  metadata-gateway:
+    # 与源码版的唯一区别：使用预构建镜像，不再 build。
+    image: ${GATEWAY_IMAGE:-ghcr.io/dreamflies/metadata-gateway}:${GATEWAY_TAG:-latest}
+    pull_policy: always
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      JAVINIZER_URL: http://javinizer:8765
+    depends_on:
+      javinizer:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:11503:11503"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
